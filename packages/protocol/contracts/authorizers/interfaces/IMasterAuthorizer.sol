@@ -18,21 +18,47 @@ interface IMasterAuthorizer is IAuthorizer {
         bytes32 indexed providerId,
         address indexed clientAddress,
         uint256 whitelistExpiration,
-        address indexed adminAddress
+        address adminAddress
         );
     event RequesterWhitelistingForProviderExtended(
         bytes32 indexed providerId,
         uint256 indexed requesterIndex,
         uint256 whitelistExpiration,
-        address indexed adminAddress
+        address adminAddress
         );
-    event ClientWhitelistExpirationSet(
+    event ClientWhitelistingForEndpointExtended(
+        bytes32 indexed providerId,
+        bytes32 indexed endpointId,
+        address indexed clientAddress,
+        uint256 whitelistExpiration,
+        address adminAddress
+        );
+    event RequesterWhitelistingForEndpointExtended(
+        bytes32 indexed providerId,
+        bytes32 indexed endpointId,
+        uint256 indexed requesterIndex,
+        uint256 whitelistExpiration,
+        address adminAddress
+        );
+    event ClientWhitelistForProviderExpirationSet(
         bytes32 indexed providerId,
         address indexed clientAddress,
         uint256 whitelistExpiration
         );
-    event RequesterWhitelistExpirationSet(
+    event RequesterWhitelistForProviderExpirationSet(
         bytes32 indexed providerId,
+        uint256 indexed requesterIndex,
+        uint256 whitelistExpiration
+        );
+    event ClientWhitelistForEndpointExpirationSet(
+        bytes32 indexed providerId,
+        bytes32 indexed endpointId,
+        address indexed clientAddress,
+        uint256 whitelistExpiration
+        );
+    event RequesterWhitelistForEndpointExpirationSet(
+        bytes32 indexed providerId,
+        bytes32 indexed endpointId,
         uint256 indexed requesterIndex,
         uint256 whitelistExpiration
         );
@@ -64,6 +90,22 @@ interface IMasterAuthorizer is IAuthorizer {
         )
         external;
 
+    function extendClientWhitelistingForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
+        address clientAddress,
+        uint256 whitelistExpiration
+        )
+        external;
+
+    function extendRequesterWhitelistingForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
+        uint256 requesterIndex,
+        uint256 whitelistExpiration
+        )
+        external;
+
     function setClientWhitelistExpirationForProvider(
         bytes32 providerId,
         address clientAddress,
@@ -73,6 +115,22 @@ interface IMasterAuthorizer is IAuthorizer {
 
     function setRequesterWhitelistExpirationForProvider(
         bytes32 providerId,
+        uint256 requesterIndex,
+        uint256 whitelistExpiration
+        )
+        external;
+
+    function setClientWhitelistExpirationForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
+        address clientAddress,
+        uint256 whitelistExpiration
+        )
+        external;
+
+    function setRequesterWhitelistExpirationForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
         uint256 requesterIndex,
         uint256 whitelistExpiration
         )

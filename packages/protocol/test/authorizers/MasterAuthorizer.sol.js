@@ -131,7 +131,7 @@ describe('extendClientWhitelistingForProvider', function () {
     context('Expiration is not in past', async function () {
       context('Expiration does not exceed admin limit', async function () {
         context('Expiration does extend whitelisting', async function () {
-          it('extends client whitelisting', async function () {
+          it('extends client whitelisting for provider', async function () {
             await masterAuthorizer
               .connect(roles.masterAdmin)
               .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
@@ -226,7 +226,7 @@ describe('extendRequesterWhitelistingForProvider', function () {
     context('Expiration is not in past', async function () {
       context('Expiration does not exceed admin limit', async function () {
         context('Expiration does extend whitelisting', async function () {
-          it('extends requester whitelisting', async function () {
+          it('extends requester whitelisting for provider', async function () {
             await masterAuthorizer
               .connect(roles.masterAdmin)
               .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
@@ -308,9 +308,247 @@ describe('extendRequesterWhitelistingForProvider', function () {
   });
 });
 
+describe('extendClientWhitelistingForEndpoint', function () {
+  context('Caller is an admin', async function () {
+    context('Expiration is not in past', async function () {
+      context('Expiration does not exceed admin limit', async function () {
+        context('Expiration does extend whitelisting', async function () {
+          it('extends client whitelisting for endpoint', async function () {
+            await masterAuthorizer
+              .connect(roles.masterAdmin)
+              .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+            const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+            await expect(
+              masterAuthorizer
+                .connect(roles.admin)
+                .extendClientWhitelistingForEndpoint(
+                  providerId,
+                  endpointId,
+                  roles.client.address,
+                  now + adminMaxWhitelistExtension / 2
+                )
+            )
+              .to.emit(masterAuthorizer, 'ClientWhitelistingForEndpointExtended')
+              .withArgs(
+                providerId,
+                endpointId,
+                roles.client.address,
+                now + adminMaxWhitelistExtension / 2,
+                roles.admin.address
+              );
+            expect(
+              await masterAuthorizer.providerIdToEndpointIdToClientAddressToWhitelistExpiration(
+                providerId,
+                endpointId,
+                roles.client.address
+              )
+            ).to.equal(now + adminMaxWhitelistExtension / 2);
+          });
+        });
+        context('Expiration does not extend whitelisting', async function () {
+          it('reverts', async function () {
+            await masterAuthorizer
+              .connect(roles.masterAdmin)
+              .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+            const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+            await masterAuthorizer
+              .connect(roles.admin)
+              .extendClientWhitelistingForEndpoint(
+                providerId,
+                endpointId,
+                roles.client.address,
+                now + adminMaxWhitelistExtension / 2
+              );
+            await expect(
+              masterAuthorizer
+                .connect(roles.admin)
+                .extendClientWhitelistingForEndpoint(
+                  providerId,
+                  endpointId,
+                  roles.client.address,
+                  now + adminMaxWhitelistExtension / 2
+                )
+            ).to.be.revertedWith('Expiration does not extend');
+          });
+        });
+      });
+      context('Expiration exceed admin limit', async function () {
+        it('reverts', async function () {
+          await masterAuthorizer
+            .connect(roles.masterAdmin)
+            .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+          const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+          await expect(
+            masterAuthorizer
+              .connect(roles.admin)
+              .extendClientWhitelistingForEndpoint(
+                providerId,
+                endpointId,
+                roles.client.address,
+                now + adminMaxWhitelistExtension * 2
+              )
+          ).to.be.revertedWith('Expiration exceeds admin limit');
+        });
+      });
+    });
+    context('Expiration is in past', async function () {
+      it('reverts', async function () {
+        await masterAuthorizer
+          .connect(roles.masterAdmin)
+          .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+        const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+        await expect(
+          masterAuthorizer
+            .connect(roles.admin)
+            .extendClientWhitelistingForEndpoint(
+              providerId,
+              endpointId,
+              roles.client.address,
+              now - adminMaxWhitelistExtension
+            )
+        ).to.be.revertedWith('Expiration is in past');
+      });
+    });
+  });
+  context('Caller is not an admin', async function () {
+    it('reverts', async function () {
+      const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+      await expect(
+        masterAuthorizer
+          .connect(roles.admin)
+          .extendClientWhitelistingForEndpoint(
+            providerId,
+            endpointId,
+            roles.client.address,
+            now + adminMaxWhitelistExtension / 2
+          )
+      ).to.be.revertedWith('Caller is not an admin');
+    });
+  });
+});
+
+describe('extendRequesterWhitelistingForEndpoint', function () {
+  context('Caller is an admin', async function () {
+    context('Expiration is not in past', async function () {
+      context('Expiration does not exceed admin limit', async function () {
+        context('Expiration does extend whitelisting', async function () {
+          it('extends requester whitelisting for endpoint', async function () {
+            await masterAuthorizer
+              .connect(roles.masterAdmin)
+              .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+            const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+            await expect(
+              masterAuthorizer
+                .connect(roles.admin)
+                .extendRequesterWhitelistingForEndpoint(
+                  providerId,
+                  endpointId,
+                  requesterIndex,
+                  now + adminMaxWhitelistExtension / 2
+                )
+            )
+              .to.emit(masterAuthorizer, 'RequesterWhitelistingForEndpointExtended')
+              .withArgs(
+                providerId,
+                endpointId,
+                requesterIndex,
+                now + adminMaxWhitelistExtension / 2,
+                roles.admin.address
+              );
+            expect(
+              await masterAuthorizer.providerIdToEndpointIdToRequesterIndexToWhitelistExpiration(
+                providerId,
+                endpointId,
+                requesterIndex
+              )
+            ).to.equal(now + adminMaxWhitelistExtension / 2);
+          });
+        });
+        context('Expiration does not extend whitelisting', async function () {
+          it('reverts', async function () {
+            await masterAuthorizer
+              .connect(roles.masterAdmin)
+              .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+            const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+            await masterAuthorizer
+              .connect(roles.admin)
+              .extendRequesterWhitelistingForEndpoint(
+                providerId,
+                endpointId,
+                requesterIndex,
+                now + adminMaxWhitelistExtension / 2
+              );
+            await expect(
+              masterAuthorizer
+                .connect(roles.admin)
+                .extendRequesterWhitelistingForEndpoint(
+                  providerId,
+                  endpointId,
+                  requesterIndex,
+                  now + adminMaxWhitelistExtension / 2
+                )
+            ).to.be.revertedWith('Expiration does not extend');
+          });
+        });
+      });
+      context('Expiration exceed admin limit', async function () {
+        it('reverts', async function () {
+          await masterAuthorizer
+            .connect(roles.masterAdmin)
+            .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+          const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+          await expect(
+            masterAuthorizer
+              .connect(roles.admin)
+              .extendRequesterWhitelistingForEndpoint(
+                providerId,
+                endpointId,
+                requesterIndex,
+                now + adminMaxWhitelistExtension * 2
+              )
+          ).to.be.revertedWith('Expiration exceeds admin limit');
+        });
+      });
+    });
+    context('Expiration is in past', async function () {
+      it('reverts', async function () {
+        await masterAuthorizer
+          .connect(roles.masterAdmin)
+          .setAdminParameters(roles.admin.address, true, adminMaxWhitelistExtension);
+        const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+        await expect(
+          masterAuthorizer
+            .connect(roles.admin)
+            .extendRequesterWhitelistingForEndpoint(
+              providerId,
+              endpointId,
+              requesterIndex,
+              now - adminMaxWhitelistExtension
+            )
+        ).to.be.revertedWith('Expiration is in past');
+      });
+    });
+  });
+  context('Caller is not an admin', async function () {
+    it('reverts', async function () {
+      const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+      await expect(
+        masterAuthorizer
+          .connect(roles.admin)
+          .extendRequesterWhitelistingForEndpoint(
+            providerId,
+            endpointId,
+            requesterIndex,
+            now + adminMaxWhitelistExtension / 2
+          )
+      ).to.be.revertedWith('Caller is not an admin');
+    });
+  });
+});
+
 describe('setClientWhitelistExpirationForProvider', function () {
   context('Caller is the master admin', async function () {
-    it('sets client whitelist expiration', async function () {
+    it('sets client whitelist expiration for provider', async function () {
       const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
       await expect(
         masterAuthorizer
@@ -321,8 +559,11 @@ describe('setClientWhitelistExpirationForProvider', function () {
             now + adminMaxWhitelistExtension * 2
           )
       )
-        .to.emit(masterAuthorizer, 'ClientWhitelistExpirationSet')
+        .to.emit(masterAuthorizer, 'ClientWhitelistForProviderExpirationSet')
         .withArgs(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2);
+      expect(
+        await masterAuthorizer.providerIdToClientAddressToWhitelistExpiration(providerId, roles.client.address)
+      ).to.equal(now + adminMaxWhitelistExtension * 2);
     });
   });
   context('Caller is not the master admin', async function () {
@@ -343,15 +584,18 @@ describe('setClientWhitelistExpirationForProvider', function () {
 
 describe('setRequesterWhitelistExpirationForProvider', function () {
   context('Caller is the master admin', async function () {
-    it('sets requester whitelist expiration', async function () {
+    it('sets requester whitelist expiration for provider', async function () {
       const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
       await expect(
         masterAuthorizer
           .connect(roles.masterAdmin)
           .setRequesterWhitelistExpirationForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
       )
-        .to.emit(masterAuthorizer, 'RequesterWhitelistExpirationSet')
+        .to.emit(masterAuthorizer, 'RequesterWhitelistForProviderExpirationSet')
         .withArgs(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2);
+      expect(
+        await masterAuthorizer.providerIdToRequesterIndexToWhitelistExpiration(providerId, requesterIndex)
+      ).to.equal(now + adminMaxWhitelistExtension * 2);
     });
   });
   context('Caller is not the master admin', async function () {
@@ -361,6 +605,90 @@ describe('setRequesterWhitelistExpirationForProvider', function () {
         masterAuthorizer
           .connect(roles.randomPerson)
           .setRequesterWhitelistExpirationForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
+      ).to.be.revertedWith('Caller is not master admin');
+    });
+  });
+});
+
+describe('setClientWhitelistExpirationForEndpoint', function () {
+  context('Caller is the master admin', async function () {
+    it('sets client whitelist expiration for endpoint', async function () {
+      const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+      await expect(
+        masterAuthorizer
+          .connect(roles.masterAdmin)
+          .setClientWhitelistExpirationForEndpoint(
+            providerId,
+            endpointId,
+            roles.client.address,
+            now + adminMaxWhitelistExtension * 2
+          )
+      )
+        .to.emit(masterAuthorizer, 'ClientWhitelistForEndpointExpirationSet')
+        .withArgs(providerId, endpointId, roles.client.address, now + adminMaxWhitelistExtension * 2);
+      expect(
+        await masterAuthorizer.providerIdToEndpointIdToClientAddressToWhitelistExpiration(
+          providerId,
+          endpointId,
+          roles.client.address
+        )
+      ).to.equal(now + adminMaxWhitelistExtension * 2);
+    });
+  });
+  context('Caller is not the master admin', async function () {
+    it('reverts', async function () {
+      const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+      await expect(
+        masterAuthorizer
+          .connect(roles.randomPerson)
+          .setClientWhitelistExpirationForEndpoint(
+            providerId,
+            endpointId,
+            roles.client.address,
+            now + adminMaxWhitelistExtension * 2
+          )
+      ).to.be.revertedWith('Caller is not master admin');
+    });
+  });
+});
+
+describe('setRequesterWhitelistExpirationForEndpoint', function () {
+  context('Caller is the master admin', async function () {
+    it('sets requester whitelist expiration for endpoint', async function () {
+      const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+      await expect(
+        masterAuthorizer
+          .connect(roles.masterAdmin)
+          .setRequesterWhitelistExpirationForEndpoint(
+            providerId,
+            endpointId,
+            requesterIndex,
+            now + adminMaxWhitelistExtension * 2
+          )
+      )
+        .to.emit(masterAuthorizer, 'RequesterWhitelistForEndpointExpirationSet')
+        .withArgs(providerId, endpointId, requesterIndex, now + adminMaxWhitelistExtension * 2);
+      expect(
+        await masterAuthorizer.providerIdToEndpointIdToRequesterIndexToWhitelistExpiration(
+          providerId,
+          endpointId,
+          requesterIndex
+        )
+      ).to.equal(now + adminMaxWhitelistExtension * 2);
+    });
+  });
+  context('Caller is not the master admin', async function () {
+    it('reverts', async function () {
+      const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
+      await expect(
+        masterAuthorizer
+          .connect(roles.randomPerson)
+          .setRequesterWhitelistExpirationForEndpoint(
+            providerId,
+            endpointId,
+            requesterIndex,
+            now + adminMaxWhitelistExtension * 2
+          )
       ).to.be.revertedWith('Caller is not master admin');
     });
   });

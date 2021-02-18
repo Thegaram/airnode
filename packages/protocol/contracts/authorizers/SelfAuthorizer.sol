@@ -18,8 +18,14 @@ contract SelfAuthorizer is ISelfAuthorizer {
     IAirnode public airnode;
     uint256 public immutable authorizerType = 2;
     mapping(bytes32 => mapping(address => Admin)) public providerIdToAdmins;
-    mapping(bytes32 => mapping(address => uint256)) public providerIdToClientAddressToWhitelistExpiration;
-    mapping(bytes32 => mapping(uint256 => uint256)) public providerIdToRequesterIndexToWhitelistExpiration;
+    mapping(bytes32 => mapping(address => uint256)) public
+        providerIdToClientAddressToWhitelistExpiration;
+    mapping(bytes32 => mapping(uint256 => uint256)) public
+        providerIdToRequesterIndexToWhitelistExpiration;
+    mapping(bytes32 => mapping(bytes32 => mapping(address => uint256))) public
+        providerIdToEndpointIdToClientAddressToWhitelistExpiration;
+    mapping(bytes32 => mapping(bytes32 => mapping(uint256 => uint256))) public
+        providerIdToEndpointIdToRequesterIndexToWhitelistExpiration;
 
     /// @dev Reverts if the caller is not the provider admin
     /// @param providerId Provider ID from `ProviderStore.sol`
@@ -178,8 +184,78 @@ contract SelfAuthorizer is ISelfAuthorizer {
             );
     }
 
+    /// @notice Called by the admin to extend the whitelisting of a client for
+    /// making requests to the endpoint of the provider
+    /// @param providerId Provider ID from `ProviderStore.sol`
+    /// @param endpointId Endpoint ID
+    /// @param clientAddress Client address
+    /// @param whitelistExpiration Timestamp at which the whitelisting of the
+    /// client will expire
+    function extendClientWhitelistingForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
+        address clientAddress,
+        uint256 whitelistExpiration
+        )
+        external
+        override
+        onlyAdmin(providerId)
+        onlyValidExpiration(
+            providerId,
+            whitelistExpiration
+            )
+    {
+        require(
+            whitelistExpiration > providerIdToEndpointIdToClientAddressToWhitelistExpiration[providerId][endpointId][clientAddress],
+            "Expiration does not extend"
+            );
+        providerIdToEndpointIdToClientAddressToWhitelistExpiration[providerId][endpointId][clientAddress] = whitelistExpiration;
+        emit ClientWhitelistingForEndpointExtended(
+            providerId,
+            endpointId,
+            clientAddress,
+            whitelistExpiration,
+            msg.sender
+            );
+    }
+
+    /// @notice Called by the admin to extend the whitelisting of a requester
+    /// for making requests to the endpoint of the provider
+    /// @param providerId Provider ID from `ProviderStore.sol`
+    /// @param endpointId Endpoint ID
+    /// @param requesterIndex Requester index from `RequesterStore.sol`
+    /// @param whitelistExpiration Timestamp at which the whitelisting of the
+    /// requester will expire
+    function extendRequesterWhitelistingForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
+        uint256 requesterIndex,
+        uint256 whitelistExpiration
+        )
+        external
+        override
+        onlyAdmin(providerId)
+        onlyValidExpiration(
+            providerId,
+            whitelistExpiration
+            )
+    {
+        require(
+            whitelistExpiration > providerIdToEndpointIdToRequesterIndexToWhitelistExpiration[providerId][endpointId][requesterIndex],
+            "Expiration does not extend"
+            );
+        providerIdToEndpointIdToRequesterIndexToWhitelistExpiration[providerId][endpointId][requesterIndex] = whitelistExpiration;
+        emit RequesterWhitelistingForEndpointExtended(
+            providerId,
+            endpointId,
+            requesterIndex,
+            whitelistExpiration,
+            msg.sender
+            );
+    }
+
     /// @notice Called by the provider admin to set the whitelisting expiration
-    /// time of the client
+    /// time of the client for the provider
     /// @dev Note that the provider admin can use this method to set the
     /// client's `whitelistExpiration` to `0`, effectively blacklisting them
     /// @param providerId Provider ID from `ProviderStore.sol`
@@ -196,7 +272,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
         onlyProviderAdmin(providerId)
     {
         providerIdToClientAddressToWhitelistExpiration[providerId][clientAddress] = whitelistExpiration;
-        emit ClientWhitelistExpirationSet(
+        emit ClientWhitelistForProviderExpirationSet(
             providerId,
             clientAddress,
             whitelistExpiration
@@ -204,7 +280,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
     }
 
     /// @notice Called by the provider admin to set the whitelisting expiration
-    /// time of the requester
+    /// time of the requester for the provider
     /// @dev Note that the provider admin can use this method to set the
     /// requester's `whitelistExpiration` to `0`, effectively blacklisting them
     /// @param providerId Provider ID from `ProviderStore.sol`
@@ -221,8 +297,64 @@ contract SelfAuthorizer is ISelfAuthorizer {
         onlyProviderAdmin(providerId)
     {
         providerIdToRequesterIndexToWhitelistExpiration[providerId][requesterIndex] = whitelistExpiration;
-        emit RequesterWhitelistExpirationSet(
+        emit RequesterWhitelistForProviderExpirationSet(
             providerId,
+            requesterIndex,
+            whitelistExpiration
+            );
+    }
+
+    /// @notice Called by the provider admin to set the whitelisting expiration
+    /// time of the client for the endpoint of the provider
+    /// @dev Note that the provider admin can use this method to set the
+    /// client's `whitelistExpiration` to `0`, effectively blacklisting them
+    /// @param providerId Provider ID from `ProviderStore.sol`
+    /// @param endpointId Endpoint ID
+    /// @param clientAddress Client address
+    /// @param whitelistExpiration Timestamp at which the whitelisting of the
+    /// client will expire
+    function setClientWhitelistExpirationForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
+        address clientAddress,
+        uint256 whitelistExpiration
+        )
+        external
+        override
+        onlyProviderAdmin(providerId)
+    {
+        providerIdToEndpointIdToClientAddressToWhitelistExpiration[providerId][endpointId][clientAddress] = whitelistExpiration;
+        emit ClientWhitelistForEndpointExpirationSet(
+            providerId,
+            endpointId,
+            clientAddress,
+            whitelistExpiration
+            );
+    }
+
+    /// @notice Called by the provider admin to set the whitelisting expiration
+    /// time of the requester for the endpoint of the provider
+    /// @dev Note that the provider admin can use this method to set the
+    /// requester's `whitelistExpiration` to `0`, effectively blacklisting them
+    /// @param providerId Provider ID from `ProviderStore.sol`
+    /// @param endpointId Endpoint ID
+    /// @param requesterIndex Requester index from `RequesterStore.sol`
+    /// @param whitelistExpiration Timestamp at which the whitelisting of the
+    /// requester will expire
+    function setRequesterWhitelistExpirationForEndpoint(
+        bytes32 providerId,
+        bytes32 endpointId,
+        uint256 requesterIndex,
+        uint256 whitelistExpiration
+        )
+        external
+        override
+        onlyProviderAdmin(providerId)
+    {
+        providerIdToEndpointIdToRequesterIndexToWhitelistExpiration[providerId][endpointId][requesterIndex] = whitelistExpiration;
+        emit RequesterWhitelistForEndpointExpirationSet(
+            providerId,
+            endpointId,
             requesterIndex,
             whitelistExpiration
             );
