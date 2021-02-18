@@ -139,7 +139,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
             "Expiration does not extend"
             );
         providerIdToClientAddressToWhitelistExpiration[providerId][clientAddress] = whitelistExpiration;
-        emit ClientWhitelistingExtended(
+        emit ClientWhitelistingForProviderExtended(
             providerId,
             clientAddress,
             whitelistExpiration,
@@ -170,7 +170,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
             "Expiration does not extend"
             );
         providerIdToRequesterIndexToWhitelistExpiration[providerId][requesterIndex] = whitelistExpiration;
-        emit RequesterWhitelistingExtended(
+        emit RequesterWhitelistingForProviderExtended(
             providerId,
             requesterIndex,
             whitelistExpiration,

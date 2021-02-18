@@ -163,7 +163,7 @@ contract MasterAuthorizer is IMasterAuthorizer {
             "Expiration does not extend"
             );
         providerIdToClientAddressToWhitelistExpiration[providerId][clientAddress] = whitelistExpiration;
-        emit ClientWhitelistingExtended(
+        emit ClientWhitelistingForProviderExtended(
             providerId,
             clientAddress,
             whitelistExpiration,
@@ -192,7 +192,7 @@ contract MasterAuthorizer is IMasterAuthorizer {
             "Expiration does not extend"
             );
         providerIdToRequesterIndexToWhitelistExpiration[providerId][requesterIndex] = whitelistExpiration;
-        emit RequesterWhitelistingExtended(
+        emit RequesterWhitelistingForProviderExtended(
             providerId,
             requesterIndex,
             whitelistExpiration,

@@ -14,13 +14,13 @@ interface IMasterAuthorizer is IAuthorizer {
         uint256 maxWhitelistExtension
         );
     event AdminshipRenounced(address indexed adminAddress);
-    event ClientWhitelistingExtended(
+    event ClientWhitelistingForProviderExtended(
         bytes32 indexed providerId,
         address indexed clientAddress,
         uint256 whitelistExpiration,
         address indexed adminAddress
         );
-    event RequesterWhitelistingExtended(
+    event RequesterWhitelistingForProviderExtended(
         bytes32 indexed providerId,
         uint256 indexed requesterIndex,
         uint256 whitelistExpiration,

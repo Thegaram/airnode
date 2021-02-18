@@ -145,7 +145,7 @@ describe('extendClientWhitelistingForProvider', function () {
                   now + adminMaxWhitelistExtension / 2
                 )
             )
-              .to.emit(masterAuthorizer, 'ClientWhitelistingExtended')
+              .to.emit(masterAuthorizer, 'ClientWhitelistingForProviderExtended')
               .withArgs(providerId, roles.client.address, now + adminMaxWhitelistExtension / 2, roles.admin.address);
             expect(
               await masterAuthorizer.providerIdToClientAddressToWhitelistExpiration(providerId, roles.client.address)
@@ -240,7 +240,7 @@ describe('extendRequesterWhitelistingForProvider', function () {
                   now + adminMaxWhitelistExtension / 2
                 )
             )
-              .to.emit(masterAuthorizer, 'RequesterWhitelistingExtended')
+              .to.emit(masterAuthorizer, 'RequesterWhitelistingForProviderExtended')
               .withArgs(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2, roles.admin.address);
             expect(
               await masterAuthorizer.providerIdToRequesterIndexToWhitelistExpiration(providerId, requesterIndex)
