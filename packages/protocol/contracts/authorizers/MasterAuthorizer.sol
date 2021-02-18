@@ -142,12 +142,13 @@ contract MasterAuthorizer is IMasterAuthorizer {
         emit AdminshipRenounced(msg.sender);
     }
 
-    /// @notice Called by the admin to extend the whitelisting of a client
+    /// @notice Called by the admin to extend the whitelisting of a client for
+    /// making requests to a provider
     /// @param providerId Provider ID from `ProviderStore.sol`
     /// @param clientAddress Client address
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// client will expire
-    function extendClientWhitelisting(
+    function extendClientWhitelistingForProvider(
         bytes32 providerId,
         address clientAddress,
         uint256 whitelistExpiration
@@ -171,11 +172,12 @@ contract MasterAuthorizer is IMasterAuthorizer {
     }
 
     /// @notice Called by the admin to extend the whitelisting of a requester
+    /// for making requests to a provider
     /// @param providerId Provider ID from `ProviderStore.sol`
     /// @param requesterIndex Requester index from `RequesterStore.sol`
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// requester will expire
-    function extendRequesterWhitelisting(
+    function extendRequesterWhitelistingForProvider(
         bytes32 providerId,
         uint256 requesterIndex,
         uint256 whitelistExpiration
@@ -199,14 +201,14 @@ contract MasterAuthorizer is IMasterAuthorizer {
     }
 
     /// @notice Called by the master admin to set the whitelisting expiration
-    /// time of the client
+    /// time of the client for making requests to a provider
     /// @dev Note that the master admin can use this method to set the client's
     /// `whitelistExpiration` to `0`, effectively blacklisting them
     /// @param providerId Provider ID from `ProviderStore.sol`
     /// @param clientAddress Client address
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// client will expire
-    function setClientWhitelistExpiration(
+    function setClientWhitelistExpirationForProvider(
         bytes32 providerId,
         address clientAddress,
         uint256 whitelistExpiration
@@ -224,14 +226,14 @@ contract MasterAuthorizer is IMasterAuthorizer {
     }
 
     /// @notice Called by the master admin to set the whitelisting expiration
-    /// time of the requester
+    /// time of the requester for making requests to a provider
     /// @dev Note that the master admin can use this method to set the
     /// requester's `whitelistExpiration` to `0`, effectively blacklisting them
     /// @param providerId Provider ID from `ProviderStore.sol`
     /// @param requesterIndex Requester index from `RequesterStore.sol`
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// requester will expire
-    function setRequesterWhitelistExpiration(
+    function setRequesterWhitelistExpirationForProvider(
         bytes32 providerId,
         uint256 requesterIndex,
         uint256 whitelistExpiration

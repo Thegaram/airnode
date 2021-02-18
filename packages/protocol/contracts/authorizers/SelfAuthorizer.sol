@@ -121,7 +121,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
     /// @param clientAddress Client address
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// client will expire
-    function extendClientWhitelisting(
+    function extendClientWhitelistingForProvider(
         bytes32 providerId,
         address clientAddress,
         uint256 whitelistExpiration
@@ -152,7 +152,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
     /// @param requesterIndex Requester index from `RequesterStore.sol`
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// requester will expire
-    function extendRequesterWhitelisting(
+    function extendRequesterWhitelistingForProvider(
         bytes32 providerId,
         uint256 requesterIndex,
         uint256 whitelistExpiration
@@ -186,7 +186,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
     /// @param clientAddress Client address
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// client will expire
-    function setClientWhitelistExpiration(
+    function setClientWhitelistExpirationForProvider(
         bytes32 providerId,
         address clientAddress,
         uint256 whitelistExpiration
@@ -211,7 +211,7 @@ contract SelfAuthorizer is ISelfAuthorizer {
     /// @param requesterIndex Requester index from `RequesterStore.sol`
     /// @param whitelistExpiration Timestamp at which the whitelisting of the
     /// requester will expire
-    function setRequesterWhitelistExpiration(
+    function setRequesterWhitelistExpirationForProvider(
         bytes32 providerId,
         uint256 requesterIndex,
         uint256 whitelistExpiration

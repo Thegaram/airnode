@@ -96,7 +96,7 @@ describe('renounceAdminship', function () {
   });
 });
 
-describe('extendClientWhitelisting', function () {
+describe('extendClientWhitelistingForProvider', function () {
   context('Caller is an admin', async function () {
     context('Expiration is not in past', async function () {
       context('Expiration does not exceed admin limit', async function () {
@@ -109,7 +109,11 @@ describe('extendClientWhitelisting', function () {
             await expect(
               selfAuthorizer
                 .connect(roles.admin)
-                .extendClientWhitelisting(providerId, roles.client.address, now + adminMaxWhitelistExtension / 2)
+                .extendClientWhitelistingForProvider(
+                  providerId,
+                  roles.client.address,
+                  now + adminMaxWhitelistExtension / 2
+                )
             )
               .to.emit(selfAuthorizer, 'ClientWhitelistingExtended')
               .withArgs(providerId, roles.client.address, now + adminMaxWhitelistExtension / 2, roles.admin.address);
@@ -126,11 +130,19 @@ describe('extendClientWhitelisting', function () {
             const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
             await selfAuthorizer
               .connect(roles.admin)
-              .extendClientWhitelisting(providerId, roles.client.address, now + adminMaxWhitelistExtension / 2);
+              .extendClientWhitelistingForProvider(
+                providerId,
+                roles.client.address,
+                now + adminMaxWhitelistExtension / 2
+              );
             await expect(
               selfAuthorizer
                 .connect(roles.admin)
-                .extendClientWhitelisting(providerId, roles.client.address, now + adminMaxWhitelistExtension / 2)
+                .extendClientWhitelistingForProvider(
+                  providerId,
+                  roles.client.address,
+                  now + adminMaxWhitelistExtension / 2
+                )
             ).to.be.revertedWith('Expiration does not extend');
           });
         });
@@ -144,7 +156,11 @@ describe('extendClientWhitelisting', function () {
           await expect(
             selfAuthorizer
               .connect(roles.admin)
-              .extendClientWhitelisting(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2)
+              .extendClientWhitelistingForProvider(
+                providerId,
+                roles.client.address,
+                now + adminMaxWhitelistExtension * 2
+              )
           ).to.be.revertedWith('Expiration exceeds admin limit');
         });
       });
@@ -158,7 +174,7 @@ describe('extendClientWhitelisting', function () {
         await expect(
           selfAuthorizer
             .connect(roles.admin)
-            .extendClientWhitelisting(providerId, roles.client.address, now - adminMaxWhitelistExtension)
+            .extendClientWhitelistingForProvider(providerId, roles.client.address, now - adminMaxWhitelistExtension)
         ).to.be.revertedWith('Expiration is in past');
       });
     });
@@ -169,13 +185,13 @@ describe('extendClientWhitelisting', function () {
       await expect(
         selfAuthorizer
           .connect(roles.admin)
-          .extendClientWhitelisting(providerId, roles.client.address, now + adminMaxWhitelistExtension / 2)
+          .extendClientWhitelistingForProvider(providerId, roles.client.address, now + adminMaxWhitelistExtension / 2)
       ).to.be.revertedWith('Caller is not an admin');
     });
   });
 });
 
-describe('extendRequesterWhitelisting', function () {
+describe('extendRequesterWhitelistingForProvider', function () {
   context('Caller is an admin', async function () {
     context('Expiration is not in past', async function () {
       context('Expiration does not exceed admin limit', async function () {
@@ -188,7 +204,11 @@ describe('extendRequesterWhitelisting', function () {
             await expect(
               selfAuthorizer
                 .connect(roles.admin)
-                .extendRequesterWhitelisting(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2)
+                .extendRequesterWhitelistingForProvider(
+                  providerId,
+                  requesterIndex,
+                  now + adminMaxWhitelistExtension / 2
+                )
             )
               .to.emit(selfAuthorizer, 'RequesterWhitelistingExtended')
               .withArgs(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2, roles.admin.address);
@@ -205,11 +225,15 @@ describe('extendRequesterWhitelisting', function () {
             const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
             await selfAuthorizer
               .connect(roles.admin)
-              .extendRequesterWhitelisting(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2);
+              .extendRequesterWhitelistingForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2);
             await expect(
               selfAuthorizer
                 .connect(roles.admin)
-                .extendRequesterWhitelisting(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2)
+                .extendRequesterWhitelistingForProvider(
+                  providerId,
+                  requesterIndex,
+                  now + adminMaxWhitelistExtension / 2
+                )
             ).to.be.revertedWith('Expiration does not extend');
           });
         });
@@ -223,7 +247,7 @@ describe('extendRequesterWhitelisting', function () {
           await expect(
             selfAuthorizer
               .connect(roles.admin)
-              .extendRequesterWhitelisting(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
+              .extendRequesterWhitelistingForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
           ).to.be.revertedWith('Expiration exceeds admin limit');
         });
       });
@@ -237,7 +261,7 @@ describe('extendRequesterWhitelisting', function () {
         await expect(
           selfAuthorizer
             .connect(roles.admin)
-            .extendRequesterWhitelisting(providerId, requesterIndex, now - adminMaxWhitelistExtension)
+            .extendRequesterWhitelistingForProvider(providerId, requesterIndex, now - adminMaxWhitelistExtension)
         ).to.be.revertedWith('Expiration is in past');
       });
     });
@@ -248,20 +272,24 @@ describe('extendRequesterWhitelisting', function () {
       await expect(
         selfAuthorizer
           .connect(roles.admin)
-          .extendRequesterWhitelisting(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2)
+          .extendRequesterWhitelistingForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension / 2)
       ).to.be.revertedWith('Caller is not an admin');
     });
   });
 });
 
-describe('setClientWhitelistExpiration', function () {
+describe('setClientWhitelistExpirationForProvider', function () {
   context('Caller is the provider admin', async function () {
     it('sets client whitelist expiration', async function () {
       const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
       await expect(
         selfAuthorizer
           .connect(roles.providerAdmin)
-          .setClientWhitelistExpiration(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2)
+          .setClientWhitelistExpirationForProvider(
+            providerId,
+            roles.client.address,
+            now + adminMaxWhitelistExtension * 2
+          )
       )
         .to.emit(selfAuthorizer, 'ClientWhitelistExpirationSet')
         .withArgs(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2);
@@ -273,20 +301,24 @@ describe('setClientWhitelistExpiration', function () {
       await expect(
         selfAuthorizer
           .connect(roles.randomPerson)
-          .setClientWhitelistExpiration(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2)
+          .setClientWhitelistExpirationForProvider(
+            providerId,
+            roles.client.address,
+            now + adminMaxWhitelistExtension * 2
+          )
       ).to.be.revertedWith('Caller is not provider admin');
     });
   });
 });
 
-describe('setRequesterWhitelistExpiration', function () {
+describe('setRequesterWhitelistExpirationForProvider', function () {
   context('Caller is the provider admin', async function () {
     it('sets requester whitelist expiration', async function () {
       const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
       await expect(
         selfAuthorizer
           .connect(roles.providerAdmin)
-          .setRequesterWhitelistExpiration(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
+          .setRequesterWhitelistExpirationForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
       )
         .to.emit(selfAuthorizer, 'RequesterWhitelistExpirationSet')
         .withArgs(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2);
@@ -298,7 +330,7 @@ describe('setRequesterWhitelistExpiration', function () {
       await expect(
         selfAuthorizer
           .connect(roles.randomPerson)
-          .setRequesterWhitelistExpiration(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
+          .setRequesterWhitelistExpirationForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2)
       ).to.be.revertedWith('Caller is not provider admin');
     });
   });
@@ -317,10 +349,18 @@ describe('checkIfAuthorized', function () {
           const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
           await selfAuthorizer
             .connect(roles.providerAdmin)
-            .setClientWhitelistExpiration(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2);
+            .setClientWhitelistExpirationForProvider(
+              providerId,
+              roles.client.address,
+              now + adminMaxWhitelistExtension * 2
+            );
           await selfAuthorizer
             .connect(roles.providerAdmin)
-            .setRequesterWhitelistExpiration(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2);
+            .setRequesterWhitelistExpirationForProvider(
+              providerId,
+              requesterIndex,
+              now + adminMaxWhitelistExtension * 2
+            );
           expect(
             await selfAuthorizer.checkIfAuthorized(
               requestId,
@@ -343,7 +383,11 @@ describe('checkIfAuthorized', function () {
           const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
           await selfAuthorizer
             .connect(roles.providerAdmin)
-            .setClientWhitelistExpiration(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2);
+            .setClientWhitelistExpirationForProvider(
+              providerId,
+              roles.client.address,
+              now + adminMaxWhitelistExtension * 2
+            );
           expect(
             await selfAuthorizer.checkIfAuthorized(
               requestId,
@@ -368,7 +412,11 @@ describe('checkIfAuthorized', function () {
           const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
           await selfAuthorizer
             .connect(roles.providerAdmin)
-            .setRequesterWhitelistExpiration(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2);
+            .setRequesterWhitelistExpirationForProvider(
+              providerId,
+              requesterIndex,
+              now + adminMaxWhitelistExtension * 2
+            );
           expect(
             await selfAuthorizer.checkIfAuthorized(
               requestId,
@@ -408,10 +456,14 @@ describe('checkIfAuthorized', function () {
       const now = (await waffle.provider.getBlock(await waffle.provider.getBlockNumber())).timestamp;
       await selfAuthorizer
         .connect(roles.providerAdmin)
-        .setClientWhitelistExpiration(providerId, roles.client.address, now + adminMaxWhitelistExtension * 2);
+        .setClientWhitelistExpirationForProvider(
+          providerId,
+          roles.client.address,
+          now + adminMaxWhitelistExtension * 2
+        );
       await selfAuthorizer
         .connect(roles.providerAdmin)
-        .setRequesterWhitelistExpiration(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2);
+        .setRequesterWhitelistExpirationForProvider(providerId, requesterIndex, now + adminMaxWhitelistExtension * 2);
       expect(
         await selfAuthorizer.checkIfAuthorized(
           requestId,

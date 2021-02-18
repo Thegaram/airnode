@@ -50,28 +50,28 @@ interface IMasterAuthorizer is IAuthorizer {
     function renounceAdminship()
         external;
 
-    function extendClientWhitelisting(
+    function extendClientWhitelistingForProvider(
         bytes32 providerId,
         address clientAddress,
         uint256 whitelistExpiration
         )
         external;
 
-    function extendRequesterWhitelisting(
+    function extendRequesterWhitelistingForProvider(
         bytes32 providerId,
         uint256 requesterIndex,
         uint256 whitelistExpiration
         )
         external;
 
-    function setClientWhitelistExpiration(
+    function setClientWhitelistExpirationForProvider(
         bytes32 providerId,
         address clientAddress,
         uint256 whitelistExpiration
         )
         external;
 
-    function setRequesterWhitelistExpiration(
+    function setRequesterWhitelistExpirationForProvider(
         bytes32 providerId,
         uint256 requesterIndex,
         uint256 whitelistExpiration
